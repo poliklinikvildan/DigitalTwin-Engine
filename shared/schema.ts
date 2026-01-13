@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, real, serial, timestamp, json } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -17,12 +17,12 @@ export type SystemState = keyof typeof SYSTEM_STATES;
 // === TABLE DEFINITIONS ===
 
 // Stores metadata for a complete simulation session
-export const simulationRuns = sqliteTable("simulation_runs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const simulationRuns = pgTable("simulation_runs", {
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
-  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(strftime('%s', 'now'))`),
-  configuration: text("configuration", { mode: "json" }).$type<{
+  createdAt: timestamp("created_at").defaultNow(),
+  configuration: json("configuration").$type<{
     maxEnergy: number;
     boundaryThreshold: number;
     haltThreshold: number;
@@ -30,8 +30,8 @@ export const simulationRuns = sqliteTable("simulation_runs", {
 });
 
 // Stores individual time steps for playback/analysis
-export const simulationSteps = sqliteTable("simulation_steps", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const simulationSteps = pgTable("simulation_steps", {
+  id: serial("id").primaryKey(),
   runId: integer("run_id").notNull(),
   stepIndex: integer("step_index").notNull(),
   timestamp: real("timestamp").notNull(), // Simulation time
