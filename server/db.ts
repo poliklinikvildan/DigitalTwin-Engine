@@ -19,11 +19,10 @@ export const db = drizzle(pool, { schema });
 // Run migrations on startup
 export async function initializeDatabase() {
   try {
-    // In production, migrations are copied to dist/drizzle
-    const migrationsFolder = process.env.NODE_ENV === 'production'
-      ? path.join(process.cwd(), 'drizzle')
-      : path.join(process.cwd(), 'drizzle');
+    // Migrations are copied to dist/drizzle during build
+    const migrationsFolder = path.join(process.cwd(), 'drizzle');
     
+    console.log('Running migrations from:', migrationsFolder);
     await migrate(db, { migrationsFolder });
     console.log('Database migrations completed successfully');
   } catch (error) {
