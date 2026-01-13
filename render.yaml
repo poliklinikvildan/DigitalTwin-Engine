@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: vldn-engine
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+    previewPlan: free
+    autoDeploy: true
+    
+databases:
+  - name: vldn-db
+    databaseName: vldn
+    plan: free
