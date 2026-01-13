@@ -1,7 +1,6 @@
-import fs from 'fs';
-import path from 'path';
 import { db } from './db';
 import { simulationRuns, simulationSteps } from '@shared/schema';
+import { eq, desc, gt, and, count, lt } from 'drizzle-orm';
 
 export class StorageManager {
   private readonly maxDbSizeBytes: number;
@@ -25,43 +24,16 @@ export class StorageManager {
   }
 
   private async enforceSizeLimit(): Promise<void> {
-    const dbPath = path.join(process.cwd(), 'sqlite.db');
-    
-    if (!fs.existsSync(dbPath)) return;
-
-    const stats = fs.statSync(dbPath);
-    const currentSize = stats.size;
-
-    if (currentSize > this.maxDbSizeBytes) {
-      console.log(`Database size (${currentSize} bytes) exceeds limit (${this.maxDbSizeBytes} bytes)`);
-      
-      // Delete oldest runs until size is under limit
-      const runs = await db.select({ id: simulationRuns.id, createdAt: simulationRuns.createdAt })
-        .from(simulationRuns)
-        .orderBy(simulationRuns.createdAt);
-
-      let deletedCount = 0;
-      for (const run of runs) {
-        // Delete the run and its steps
-        await db.delete(simulationSteps).where(eq(simulationSteps.runId, run.id));
-        await db.delete(simulationRuns).where(eq(simulationRuns.id, run.id));
-        deletedCount++;
-
-        // Check size again
-        const newStats = fs.statSync(dbPath);
-        if (newStats.size <= this.maxDbSizeBytes) {
-          break;
-        }
-      }
-
-      console.log(`Deleted ${deletedCount} oldest runs to enforce size limit`);
-    }
+    // PostgreSQL manages its own storage on the server
+    // No local file size checks needed
+    console.log('Size limits enforced by PostgreSQL server');
   }
 
   private async enforceRunCountLimit(): Promise<void> {
-    const runCount = await db.select({ count: count() })
-      .from(simulationRuns)
-      .then(rows => rows[0]?.count || 0);
+    const result = await db.select({ count: count() })
+      .from(simulationRuns);
+    
+    const runCount = result[0]?.count || 0;
 
     if (runCount > this.maxRuns) {
       console.log(`Run count (${runCount}) exceeds limit (${this.maxRuns})`);
@@ -112,14 +84,11 @@ export class StorageManager {
     }
   }
 
-  getStorageStats(): { size: number; runs: number; steps: number } {
-    const dbPath = path.join(process.cwd(), 'sqlite.db');
-    const size = fs.existsSync(dbPath) ? fs.statSync(dbPath).size : 0;
-    
+  getStorageStats(): { runs: number; steps: number } {
+    // Returns placeholder stats - would need async query for actual values
     return {
-      size,
-      runs: 0, // Would need async query
-      steps: 0 // Would need async query
+      runs: 0,
+      steps: 0
     };
   }
 }

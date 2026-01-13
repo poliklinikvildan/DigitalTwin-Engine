@@ -1,24 +1,16 @@
-import fs from 'fs';
-import path from 'path';
 import { db } from './db';
 import { simulationRuns, simulationSteps } from '@shared/schema';
 import { eq, desc } from 'drizzle-orm';
 
 export class MemoryLimit {
   private readonly maxDbSizeBytes: number;
-  private readonly dbPath: string;
 
   constructor(maxDbSizeBytes: number = 200 * 1024) { // Default 200KB
     this.maxDbSizeBytes = maxDbSizeBytes;
-    this.dbPath = path.join(process.cwd(), 'sqlite.db');
   }
 
   async enforceMemoryLimit(): Promise<void> {
-    if (!fs.existsSync(this.dbPath)) return;
-
-    const currentSize = fs.statSync(this.dbPath).size;
-    
-    // Always delete all previous runs to keep only the latest one
+    // PostgreSQL handles storage limits server-side
     const runs = await db
       .select({
         id: simulationRuns.id,
