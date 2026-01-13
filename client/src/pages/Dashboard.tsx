@@ -144,57 +144,56 @@ export default function Dashboard() {
 
   const handleSaveRun = async () => {
     try {
+      // Validate run exists
       if (!currentRunId) {
         toast({
           variant: "destructive",
           title: "No Simulation",
-          description: "Start a simulation first before saving.",
+          description: "Run a simulation first before saving.",
         });
         return;
       }
 
-      if (!runName.trim()) {
+      // Validate name provided
+      const finalName = runName.trim();
+      if (!finalName) {
         toast({
           variant: "destructive",
           title: "Name Required",
-          description: "Please enter a simulation name.",
+          description: "Please enter a name for your simulation.",
         });
         return;
       }
 
-      // Update the run with the provided name
+      // Update the run name in database
       const updateRes = await fetch(`/api/runs/${currentRunId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: runName })
+        body: JSON.stringify({ name: finalName })
       });
 
       if (!updateRes.ok) {
-        throw new Error('Failed to update run name');
+        const error = await updateRes.json();
+        throw new Error(error.message || 'Failed to save run');
       }
 
-      const updatedRun = await updateRes.json();
-
-      // Fetch the run to show confirmation with updated data
-      const res = await fetch(`/api/runs/${currentRunId}`);
-      const { run, steps } = await res.json();
-      
+      // Show success
       toast({
-        title: "Run Saved",
-        description: `Archived "${run.name}" with ${steps.length} steps.`,
+        title: "Saved Successfully",
+        description: `Simulation "${finalName}" saved with ${history.length} steps.`,
       });
 
+      // Clean up and reset
       setShowSaveDialog(false);
       setRunName("");
-      
-      // Reset for new simulation
       handleReset();
+      
     } catch (error) {
       console.error('Save error:', error);
       toast({
         variant: "destructive",
         title: "Save Failed",
-        description: "Could not save simulation run.",
+        description: error instanceof Error ? error.message : "Could not save simulation.",
       });
     }
   };
