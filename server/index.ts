@@ -3,7 +3,7 @@ import { registerRoutes, seedDatabase } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 import { memoryLimit } from "./memory-limit";
-import { initializeDatabase } from "./db";
+import { storageManager } from "./storage-manager";
 
 const app = express();
 const httpServer = createServer(app);
@@ -62,21 +62,13 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  try {
-    // Initialize database (run migrations)
-    await initializeDatabase();
-  } catch (error) {
-    console.error('Failed to initialize database:', error);
-    process.exit(1);
-  }
-
   const server = await registerRoutes(httpServer, app);
 
   // Seed data on startup
   seedDatabase().catch(console.error);
 
-  // Enforce memory limit
-  memoryLimit.enforceMemoryLimit().catch(console.error);
+  // Enforce storage limits
+  storageManager.enforceLimits().catch(console.error);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

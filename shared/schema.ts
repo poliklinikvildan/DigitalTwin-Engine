@@ -1,4 +1,4 @@
-import { pgTable, text, integer, real, serial, timestamp, json } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, real, timestamp } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -22,7 +22,7 @@ export const simulationRuns = pgTable("simulation_runs", {
   name: text("name").notNull(),
   description: text("description"),
   createdAt: timestamp("created_at").defaultNow(),
-  configuration: json("configuration").$type<{
+  configuration: text("configuration").$type<{
     maxEnergy: number;
     boundaryThreshold: number;
     haltThreshold: number;
@@ -32,8 +32,8 @@ export const simulationRuns = pgTable("simulation_runs", {
 // Stores individual time steps for playback/analysis
 export const simulationSteps = pgTable("simulation_steps", {
   id: serial("id").primaryKey(),
-  runId: integer("run_id").notNull(),
-  stepIndex: integer("step_index").notNull(),
+  runId: serial("run_id").notNull(),
+  stepIndex: serial("step_index").notNull(),
   timestamp: real("timestamp").notNull(), // Simulation time
   energy: real("energy").notNull(),
   trend: real("trend").notNull(),
@@ -93,6 +93,6 @@ export interface EvaluateResponse {
   state: SystemState;
   effectiveEnergy: number; // The energy value after noise/trend application
   details: string;
-  runId?: number; // ID of the run (for new runs)
-  action?: string; // Action performed (e.g., 'started_new')
+  runId?: number;
+  action?: string;
 }

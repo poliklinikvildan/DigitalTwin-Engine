@@ -154,17 +154,8 @@ export default function Dashboard() {
         return;
       }
 
-      // Validate name provided
-      const finalName = runName.trim();
-      if (!finalName) {
-        toast({
-          variant: "destructive",
-          title: "Name Required",
-          description: "Please enter a name for your simulation.",
-        });
-        return;
-      }
-
+      const finalName = runName.trim() || `Simulation ${new Date().toLocaleTimeString()}`;
+      
       // Update the run name in database
       const updateRes = await fetch(`/api/runs/${currentRunId}`, {
         method: 'PATCH',
@@ -351,7 +342,10 @@ export default function Dashboard() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowSaveDialog(false)}>Cancel</Button>
-            <Button onClick={handleSaveRun} disabled={createRun.isPending}>
+            <Button 
+              onClick={handleSaveRun} 
+              disabled={!runName.trim() || createRun.isPending}
+            >
               {createRun.isPending ? "Saving..." : "Save Run"}
             </Button>
           </DialogFooter>

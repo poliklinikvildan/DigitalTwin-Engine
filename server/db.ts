@@ -3,6 +3,9 @@ import { Pool } from "pg";
 import * as schema from "@shared/schema";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import path from "path";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const databaseUrl = process.env.DATABASE_URL;
 

@@ -24,7 +24,9 @@ export const api = {
         200: z.object({
           state: z.nativeEnum(SYSTEM_STATES),
           effectiveEnergy: z.number(),
-          details: z.string()
+          details: z.string(),
+          runId: z.number().optional(),
+          action: z.string().optional()
         }),
         400: errorSchemas.validation,
       },
