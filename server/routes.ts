@@ -160,6 +160,40 @@ export async function registerRoutes(
     }
   });
 
+  // Update run metadata (name, description)
+  app.patch(api.runs.update.path, async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      const run = await storage.getRun(id);
+      if (!run) {
+        return res.status(404).json({ message: 'Run not found' });
+      }
+
+      const input = api.runs.update.input.parse(req.body);
+      
+      // Update only the provided fields
+      const updateData: any = {};
+      if (input.name !== undefined) updateData.name = input.name;
+      if (input.description !== undefined) updateData.description = input.description;
+
+      const [updatedRun] = await db
+        .update(simulationRuns)
+        .set(updateData)
+        .where(eq(simulationRuns.id, id))
+        .returning();
+
+      res.json(updatedRun);
+    } catch (err: any) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: err.errors[0].message,
+          field: err.errors[0].path.join('.'),
+        });
+      }
+      throw err;
+    }
+  });
+
   // === Debug Routes ===
   
   app.get('/api/debug/runs', async (req, res) => {

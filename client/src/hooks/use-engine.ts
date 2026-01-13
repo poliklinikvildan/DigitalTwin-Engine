@@ -77,3 +77,24 @@ export function useRun(id: number) {
     enabled: !!id,
   });
 }
+
+// Hook to update run metadata (name, description)
+export function useUpdateRun() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { id: number; name?: string; description?: string }) => {
+      const url = buildUrl(api.runs.update.path, { id: data.id });
+      const res = await fetch(url, {
+        method: api.runs.update.method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: data.name, description: data.description }),
+      });
+      if (!res.ok) throw new Error("Failed to update run");
+      return api.runs.update.responses[200].parse(await res.json());
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.runs.list.path] });
+      queryClient.invalidateQueries({ queryKey: [api.runs.get.path] });
+    },
+  });
+}

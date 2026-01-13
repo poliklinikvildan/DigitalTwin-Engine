@@ -153,13 +153,35 @@ export default function Dashboard() {
         return;
       }
 
-      // Fetch the run to show confirmation
+      if (!runName.trim()) {
+        toast({
+          variant: "destructive",
+          title: "Name Required",
+          description: "Please enter a simulation name.",
+        });
+        return;
+      }
+
+      // Update the run with the provided name
+      const updateRes = await fetch(`/api/runs/${currentRunId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: runName })
+      });
+
+      if (!updateRes.ok) {
+        throw new Error('Failed to update run name');
+      }
+
+      const updatedRun = await updateRes.json();
+
+      // Fetch the run to show confirmation with updated data
       const res = await fetch(`/api/runs/${currentRunId}`);
       const { run, steps } = await res.json();
       
       toast({
-        title: "Run Archived",
-        description: `Saved "${run.name}" with ${steps.length} steps.`,
+        title: "Run Saved",
+        description: `Archived "${run.name}" with ${steps.length} steps.`,
       });
 
       setShowSaveDialog(false);
@@ -168,6 +190,7 @@ export default function Dashboard() {
       // Reset for new simulation
       handleReset();
     } catch (error) {
+      console.error('Save error:', error);
       toast({
         variant: "destructive",
         title: "Save Failed",

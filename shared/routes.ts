@@ -68,6 +68,19 @@ export const api = {
         201: z.object({ count: z.number() }),
         404: errorSchemas.notFound,
       },
+    },
+    update: {
+      method: 'PATCH' as const,
+      path: '/api/runs/:id',
+      input: z.object({
+        name: z.string().optional(),
+        description: z.string().optional(),
+      }),
+      responses: {
+        200: z.custom<typeof simulationRuns.$inferSelect>(),
+        400: errorSchemas.validation,
+        404: errorSchemas.notFound,
+      },
     }
   },
 };
