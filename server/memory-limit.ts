@@ -41,6 +41,7 @@ export class MemoryLimit {
           console.log(`Deleted run "${run.name}" to keep only latest run`);
         }
       }
+    } catch (error) {
       console.error('Error enforcing memory limit:', error);
     }
   }
