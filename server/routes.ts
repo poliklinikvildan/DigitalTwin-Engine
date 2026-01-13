@@ -2,9 +2,21 @@ import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
-import { z } from "zod";
+import { db } from "./db";
+import { eq, and, lt, gt, count, desc } from "drizzle-orm";
+import {
+  simulationRuns,
+  simulationSteps,
+  type SimulationRun,
+  type CreateRunRequest,
+  type SimulationStep,
+  type CreateStepRequest,
+  insertRunSchema,
+  insertStepSchema,
+} from "@shared/schema";
+import { storageManager } from "./storage-manager";
 import { evaluateSystemState } from "./lib/engine";
-import { insertStepSchema } from "@shared/schema";
+import { z } from "zod";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -13,19 +25,68 @@ export async function registerRoutes(
 
   // === Engine Routes ===
   
-  app.post(api.engine.evaluate.path, (req, res) => {
+  app.post(api.engine.evaluate.path, async (req, res) => {
     try {
       const input = api.engine.evaluate.input.parse(req.body);
       const result = evaluateSystemState(input);
+      
+      // Handle control commands
+      if (input.command === 'start_new') {
+        // Create a new run
+        const newRun = await storage.createRun({
+          name: input.name || `Run ${Date.now()}`,
+          description: input.description || "New simulation run",
+          configuration: {
+            maxEnergy: input.maxEnergy || 1.5,
+            boundaryThreshold: input.boundaryThreshold || 0.8,
+            haltThreshold: input.haltThreshold || 1.0
+          }
+        });
+        
+        // Save initial step
+        await storage.addSteps([{
+          runId: newRun.id,
+          stepIndex: 0,
+          timestamp: Date.now(),
+          energy: input.energy,
+          trend: input.trend,
+          noise: input.noise,
+          calculatedState: result.state
+        }]);
+        
+        return res.json({
+          ...result,
+          runId: newRun.id,
+          action: 'started_new'
+        });
+      }
+      
+      // Auto-save step if runId is provided
+      if (input.runId) {
+        await storage.addSteps([{
+          runId: input.runId,
+          stepIndex: input.stepIndex || 0,
+          timestamp: input.timestamp || Date.now(),
+          energy: input.energy,
+          trend: input.trend,
+          noise: input.noise,
+          calculatedState: result.state
+        }]);
+      }
+      
       res.json(result);
-    } catch (err) {
+    } catch (err: any) {
+      console.error('Evaluate error:', err);
       if (err instanceof z.ZodError) {
         return res.status(400).json({
           message: err.errors[0].message,
           field: err.errors[0].path.join('.'),
         });
       }
-      throw err;
+      res.status(500).json({ 
+        error: err.message || 'Evaluation failed',
+        details: err.toString()
+      });
     }
   });
 
@@ -40,8 +101,12 @@ export async function registerRoutes(
     try {
       const input = api.runs.create.input.parse(req.body);
       const run = await storage.createRun(input);
+      
+      // Enforce storage limits after creating a new run
+      await storageManager.enforceLimits();
+      
       res.status(201).json(run);
-    } catch (err) {
+    } catch (err: any) {
       if (err instanceof z.ZodError) {
         return res.status(400).json({
           message: err.errors[0].message,
@@ -92,6 +157,65 @@ export async function registerRoutes(
         });
       }
       throw err;
+    }
+  });
+
+  // === Debug Routes ===
+  
+  app.get('/api/debug/runs', async (req, res) => {
+    try {
+      const runs = await db.select().from(simulationRuns);
+      const steps = await db.select().from(simulationSteps);
+      res.json({
+        runsCount: runs.length,
+        stepsCount: steps.length,
+        runs: runs,
+        steps: steps.slice(0, 5), // Show first 5 steps
+        dbPath: process.env.DATABASE_URL
+      });
+    } catch (err: any) {
+      console.error('Debug error:', err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // === Memory Management Routes ===
+  
+  app.get('/api/memory/stats', async (req, res) => {
+    try {
+      const stats = await memoryLimit.getDetailedStats();
+      res.json({
+        currentSize: stats.currentSize,
+        maxSize: stats.maxSize,
+        usagePercent: stats.usagePercent,
+        runCount: stats.runCount,
+        stepCount: stats.stepCount,
+        currentSizeMB: (stats.currentSize / 1024 / 1024).toFixed(2),
+        maxSizeMB: (stats.maxSize / 1024 / 1024).toFixed(2),
+      });
+    } catch (err: any) {
+      console.error('Error getting memory stats:', err);
+      res.status(500).json({ error: err.message || 'Failed to get memory stats' });
+    }
+  });
+
+  app.post('/api/memory/cleanup', async (req, res) => {
+    try {
+      await memoryLimit.enforceMemoryLimit();
+      const stats = await memoryLimit.getDetailedStats();
+      res.json({
+        message: 'Memory cleanup completed',
+        stats: {
+          currentSizeMB: (stats.currentSize / 1024 / 1024).toFixed(2),
+          maxSizeMB: (stats.maxSize / 1024 / 1024).toFixed(2),
+          usagePercent: stats.usagePercent.toFixed(2),
+          runCount: stats.runCount,
+          stepCount: stats.stepCount,
+        }
+      });
+    } catch (err: any) {
+      console.error('Error during memory cleanup:', err);
+      res.status(500).json({ error: err.message || 'Failed to cleanup memory' });
     }
   });
 

@@ -36,14 +36,14 @@ export function useCreateRun() {
 }
 
 // Hook to bulk save steps for a run
-export function useAddSteps(runId: number) {
+export function useAddSteps() {
   return useMutation({
-    mutationFn: async (steps: Omit<CreateStepRequest, "runId">[]) => {
-      const url = buildUrl(api.runs.addSteps.path, { id: runId });
+    mutationFn: async (data: { runId: number; steps: Omit<CreateStepRequest, "runId">[] }) => {
+      const url = buildUrl(api.runs.addSteps.path, { id: data.runId });
       const res = await fetch(url, {
         method: api.runs.addSteps.method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ steps }),
+        body: JSON.stringify({ steps: data.steps }),
       });
       if (!res.ok) throw new Error("Failed to save steps");
       return api.runs.addSteps.responses[201].parse(await res.json());

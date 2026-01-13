@@ -20,15 +20,13 @@ export default function Dashboard() {
   const [trend, setTrend] = useState(0.0);
   const [noise, setNoise] = useState(0.1);
   const [isRunning, setIsRunning] = useState(false);
-  
-  // === System State ===
   const [currentState, setCurrentState] = useState<SystemState>(SYSTEM_STATES.STABLE);
   const [history, setHistory] = useState<Partial<SimulationStep>[]>([]);
   const [stepIndex, setStepIndex] = useState(0);
   const [showHaltDialog, setShowHaltDialog] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [runName, setRunName] = useState("");
-
+  const [currentRunId, setCurrentRunId] = useState<number | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   
@@ -49,12 +47,46 @@ export default function Dashboard() {
     
     try {
       // 2. Evaluate against the engine
-      const result = await evaluate.mutateAsync({
-        energy,
-        trend,
-        noise,
-        previousState: currentState,
-      });
+      let result;
+      if (!currentRunId) {
+        // Start new run
+        result = await evaluate.mutateAsync({
+          command: 'start_new',
+          name: runName || `Run ${new Date().toLocaleTimeString()}`,
+          description: `Max Energy: ${energy}, Trend: ${trend}, Noise: ${noise}`,
+          maxEnergy: 1.5,
+          boundaryThreshold: 0.8,
+          haltThreshold: 1.0,
+          energy,
+          trend,
+          noise,
+          previousState: currentState
+        });
+        
+        if (result.runId) {
+          setCurrentRunId(result.runId);
+          setHistory([{
+            stepIndex: 0,
+            timestamp: Date.now(),
+            energy: result.effectiveEnergy,
+            trend,
+            noise,
+            calculatedState: result.state
+          }]);
+        }
+      } else {
+        // Add step to existing run
+        result = await evaluate.mutateAsync({
+          command: 'evaluate',
+          runId: currentRunId!,
+          stepIndex: stepIndex + 1,
+          timestamp: Date.now(),
+          energy,
+          trend,
+          noise,
+          previousState: currentState
+        });
+      }
 
       // 3. Update State
       setCurrentState(result.state);
@@ -112,36 +144,29 @@ export default function Dashboard() {
 
   const handleSaveRun = async () => {
     try {
-      const run = await createRun.mutateAsync({
-        name: runName || `Simulation Run ${new Date().toLocaleTimeString()}`,
-        description: `Max Energy: ${energy}, Trend: ${trend}, Noise: ${noise}`,
-        configuration: {
-          maxEnergy: 1.5,
-          boundaryThreshold: 0.8,
-          haltThreshold: 1.0
-        }
-      });
-
-      // In a real app we might batch this better, but here we just dump the current history buffer
-      if (history.length > 0) {
-        // Fix types for API
-        const stepsToSave = history.map(h => ({
-          stepIndex: h.stepIndex!,
-          timestamp: h.timestamp!,
-          energy: h.energy!,
-          trend: h.trend!,
-          noise: h.noise!,
-          calculatedState: h.calculatedState as SystemState
-        }));
-        await addSteps.mutateAsync(stepsToSave);
+      if (!currentRunId) {
+        toast({
+          variant: "destructive",
+          title: "No Simulation",
+          description: "Start a simulation first before saving.",
+        });
+        return;
       }
+
+      // Fetch the run to show confirmation
+      const res = await fetch(`/api/runs/${currentRunId}`);
+      const { run, steps } = await res.json();
+      
+      toast({
+        title: "Run Archived",
+        description: `Saved "${run.name}" with ${steps.length} steps.`,
+      });
 
       setShowSaveDialog(false);
       setRunName("");
-      toast({
-        title: "Run Saved",
-        description: "Simulation run has been archived successfully.",
-      });
+      
+      // Reset for new simulation
+      handleReset();
     } catch (error) {
       toast({
         variant: "destructive",

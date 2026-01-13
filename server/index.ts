@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes, seedDatabase } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { memoryLimit } from "./memory-limit";
 
 const app = express();
 const httpServer = createServer(app);
@@ -64,6 +65,9 @@ app.use((req, res, next) => {
 
   // Seed data on startup
   seedDatabase().catch(console.error);
+
+  // Enforce memory limit
+  memoryLimit.enforceMemoryLimit().catch(console.error);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
