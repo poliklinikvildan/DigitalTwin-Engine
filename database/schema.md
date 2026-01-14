@@ -1,9 +1,8 @@
-PostgreSQL database schema for DigitalTwin-Engine
+# PostgreSQL Schema for DigitalTwin-Engine
 
-fOR LOCAL PC SUCH AS WINDOWS
-# Database Setup Guide
+## Database Setup Guide
 
-## 1. Local Development (Windows)
+### 1. Local Development (Windows)
 
 ### Prerequisites
 - **PostgreSQL** must be installed
