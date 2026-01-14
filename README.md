@@ -203,7 +203,7 @@ npm run check        # Run TypeScript checks
 npm run db:push      # Push database schema changes
 ```
 
-# Project Structure
+## Project Structure
 
 ```
 DigitalTwin-Engine/
