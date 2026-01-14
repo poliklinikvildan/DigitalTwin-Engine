@@ -46,4 +46,5 @@ const THRESHOLDS = {
 5. Energy drops to 0.55 → Stays BOUNDARY_ZONE (above 0.5)
 6. Energy drops to 0.4 → Returns to STABLE
 
-Note: This is a general sytem thus no units are applıed except tome second
+Note: This is a general system, thus no units are applied except time (seconds).
+
