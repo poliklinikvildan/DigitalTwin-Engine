@@ -3,6 +3,7 @@
 A real-time simulation engine for modeling system behavior under stress conditions, featuring boundary detection and automatic halt mechanisms.
 
 ## 📋 Table of Contents
+## Table of Contents
 - [Features](#features)
 - [Tech Stack](#tech-stack)
   - [Frontend](#frontend)
@@ -11,7 +12,7 @@ A real-time simulation engine for modeling system behavior under stress conditio
   - [Prerequisites](#prerequisites)
   - [Local Development (Windows 64-bit)](#local-development-windows-64-bit)
   - [Quick Database Verification](#quick-database-verification)
-- [Deployment](#deployment)
+- [Deployment](#deployment-render)
   - [Render.com](#rendercom)
 - [Database Schema](#database-schema)
   - [Tables Overview](#tables-overview)
@@ -32,6 +33,7 @@ A real-time simulation engine for modeling system behavior under stress conditio
 - [License](#license)
 - [Support](#support)
 - [Live Deployment](#live-deployment)
+
 
 
 ## 🚀 Features
