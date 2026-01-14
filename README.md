@@ -264,3 +264,9 @@ For questions and support:
 **URL:** https://digitaltwin-engine-3.onrender.com/  
 
 **Platform:** Render.com
+<figure>
+  <img width="640" height="445"
+       src="https://github.com/user-attachments/assets/1f67b5bc-6c25-45b9-88ce-bee3177d9e09"
+       alt="TwinEngine Screenshot" />
+  <figcaption><em>TwinEngine Screenshot</em></figcaption>
+</figure>
