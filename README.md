@@ -2,6 +2,21 @@
 
 A real-time simulation engine for modeling system behavior under stress conditions, featuring boundary detection and automatic halt mechanisms.
 
+## 📋 Table of Contents
+- [Features](#-features)
+- [Tech Stack](#️-tech-stack)
+- [Installation](#-installation)
+- [Deployment](#-deployment)
+- [Database Schema](#-database-schema)
+- [API Endpoints](#-api-endpoints)
+- [Development](#-development)
+- [Testing](#-testing)
+- [Monitoring](#-monitoring)
+- [Project Structure](#-project-structure)
+- [License](#-license)
+- [Support](#-support)
+- [Live Deployment](#live-deployment)
+
 ## 🚀 Features
 
 - **Real-time Simulation**: Live energy monitoring with trend and noise factors
@@ -34,63 +49,72 @@ A real-time simulation engine for modeling system behavior under stress conditio
 - PostgreSQL 15+
 - npm or yarn
 
-### Local Development
+### Local Development (Windows 64-bit)
+
+#### Prerequisites
+- Node.js 18+
+- PostgreSQL 15+ for Windows
+- npm or yarn
+
+#### Setup Instructions
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/poliklinikvildan/DigitalTwin-Engine.git
 cd DigitalTwin-Engine
 
-# Install dependencies
+# 2. Install dependencies
 npm install
 
-# Set up environment variables
+# 3. Install PostgreSQL 15+ from: https://www.postgresql.org/download/windows/
+
+# 4. Create database
+createdb -U postgres digitaltwin
+
+# 5. Set up environment variables
 cp .env.example .env
-# Edit .env with your database configuration
+# Edit .env with your database configuration:
+# DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/digitaltwin
 
-# Run database migrations
-npx drizzle-kit push
+# 6. Run database migrations (creates tables automatically)
+npm run db:push
 
-# Start development server
+# 7. Start development server
 npm run dev
 ```
 
-## 🔧 Configuration
-
-### Environment Variables
-
-```env
-# Database Configuration
-DATABASE_URL=postgresql://username:password@localhost:5432/digitaltwin
-
-# Application Settings
-NODE_ENV=development
-```
-
-### Database Setup
-
-#### PostgreSQL (Recommended for Production)
+#### Quick Database Verification
 ```bash
-# Create database
-createdb digitaltwin
+# Check if tables were created
+psql -U postgres -d digitaltwin -c "\dt"
 
-# Run migrations
-npm run db:push
+# Should show:
+# simulation_runs
+# simulation_steps
 ```
 
-## 🚀 Deployment
+## 🚀 Deployment (Render)
 
 ### Render.com
 
-1. **Create PostgreSQL Database**
-   - Name: `vldn-db`
-   - Database: `vldn`
-   - Region: Same as your service
+1. **Create PostgreSQL Database** (Render Managed)
+   - Render provides managed PostgreSQL - no local installation needed
+   - Create new PostgreSQL service on Render
+   - Database name: render_db_XXXX
+   - Copy connection string from Render dashboard
 
 2. **Deploy Web Service**
    - Connect your GitHub repository
    - Build Command: `npm install && npm run build`
    - Start Command: `npm run start`
-   - Add `DATABASE_URL` environment variable
+   - Add `DATABASE_URL` environment variable (use Render's connection string)
+
+## 📊 Database Schema
+
+See [`database/SQL_DOCUMENTATION.md`](./database/SQL_DOCUMENTATION.md) for complete SQL schema documentation.
+
+### Tables Overview
+- **`simulation_runs`** - Stores simulation session metadata
+- **`simulation_steps`** - Stores individual simulation time steps
 
 ## 📊 API Endpoints
 
@@ -168,18 +192,35 @@ npm run db:push      # Push database schema changes
 ```
 DigitalTwin-Engine/
 ├── client/                 # React frontend
-│   ├── src/
-│   │   ├── components/   # UI components
-│   │   ├── hooks/      # React hooks
-│   │   └── pages/      # Page components
-├── server/               # Node.js backend
-│   ├── routes.ts      # API endpoints
-│   ├── db.ts         # Database connection
-│   └── storage.ts     # Data access layer
-├── shared/              # Shared types and schema
-│   ├── schema.ts      # Database schema
-│   └── routes.ts      # API type definitions
-└── drizzle/            # Database migrations
+│   ├── public/            # Static files
+│   └── src/
+│       ├── components/    # UI components
+│       ├── hooks/         # Custom React hooks
+│       ├── pages/         # Page components
+│       ├── App.tsx        # Main App component
+│       └── main.tsx       # Entry point
+│
+├── server/                # Node.js backend
+│   ├── routes.ts         # API endpoints
+│   ├── db.ts            # Database connection
+│   ├── storage.ts        # Data access layer
+│   ├── server.ts         # Express server setup
+│   └── websocket.ts      # WebSocket server
+│
+├── shared/               # Shared code
+│   ├── schema.ts        # Database schema
+│   └── routes.ts        # API type definitions
+│
+├── drizzle/              # Database migrations
+│   └── 0000_aromatic_dragon_man.sql
+│
+├── dist/                 # Compiled output
+├── node_modules/         # Dependencies
+│
+├── .env.example          # Environment template
+├── package.json          # Project config
+├── tsconfig.json         # TypeScript config
+└── vite.config.ts        # Vite config
 ```
 
 ## 🧪 Testing
@@ -206,26 +247,20 @@ npx drizzle-kit push
 GET /api/debug/runs  # View all simulation data
 ```
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 👥 Support
+## Support
 
 For questions and support:
 
-- 📧 **Issues**: [GitHub Issues](https://github.com/poliklinikvildan/DigitalTwin-Engine/issues)
-- 📧 **Discussions**: [GitHub Discussions](https://github.com/poliklinikvildan/DigitalTwin-Engine/discussions)
 - 📧 **Email**: poliklinikvildan@gmail.com
 
 ---
 
 **Built for digital twin simulation and analysis example**
+## Live Deployment
+**URL:** https://digitaltwin-engine-3.onrender.com/  
+
+**Platform:** Render.com
