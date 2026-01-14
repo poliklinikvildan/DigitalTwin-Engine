@@ -23,7 +23,7 @@
 
 ## Database Schema
 
-> **Note**: This file is for reference only. Actual schema is managed by Drizzle ORM.
+> **Note**: This file is for reference only. Actual PostgreSQL schema is managed by Drizzle ORM.
 > See `drizzle/0000_aromatic_dragon_man.sql` for the exact schema.
 
 ### Simulation Metadata
