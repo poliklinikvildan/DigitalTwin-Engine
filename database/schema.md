@@ -17,11 +17,18 @@
 2. **Create Database**:
    ```bash
    createdb -U postgres digitaltwin
+   ```
 
--- This file is for reference only. Actual schema is managed by Drizzle ORM.
--- See drizzle/0000_aromatic_dragon_man.sql for the exact schema.
+---
 
--- Simulation metadata
+## Database Schema
+
+> **Note**: This file is for reference only. Actual schema is managed by Drizzle ORM.
+> See `drizzle/0000_aromatic_dragon_man.sql` for the exact schema.
+
+### Simulation Metadata
+
+```sql
 CREATE TABLE "simulation_runs" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
@@ -29,8 +36,11 @@ CREATE TABLE "simulation_runs" (
 	"created_at" timestamp DEFAULT now(),
 	"configuration" json NOT NULL
 );
+```
 
--- Simulation step data
+### Simulation Step Data
+
+```sql
 CREATE TABLE "simulation_steps" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"run_id" integer NOT NULL,
@@ -41,7 +51,11 @@ CREATE TABLE "simulation_steps" (
 	"noise" real NOT NULL,
 	"calculated_state" text NOT NULL
 );
+```
 
--- Performance indexes
+### Performance Indexes
+
+```sql
 CREATE INDEX idx_simulation_steps_run_id ON simulation_steps(run_id);
 CREATE INDEX idx_simulation_steps_timestamp ON simulation_steps(timestamp);
+```
