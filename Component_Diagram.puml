@@ -1,0 +1,74 @@
+@startuml Digital Twin Engine - Tech Stack
+skinparam componentStyle uml2
+skinparam backgroundColor #F8F8F8
+
+' Frontend Components
+package "Frontend (React 18)" as FE {
+  [React Components\nwith TypeScript] as RC
+  [Vite] as VITE
+  [TailwindCSS] as TAILWIND
+  [Radix UI] as RADIX
+  [Recharts] as RECHARTS
+  [Wouter Router] as WOUTER
+  
+  RC --> VITE : Bundling
+  RC --> TAILWIND : Styling
+  RC --> RADIX : UI Components
+  RC --> RECHARTS : Data Viz
+  RC --> WOUTER : Routing
+}
+
+' Backend Components
+package "Backend (Node.js)" as BE {
+  [Express Server] as EXPRESS
+  [WebSocket Server] as WS
+  [Drizzle ORM] as DRIZZLE
+  [TypeScript] as TS
+  
+  EXPRESS --> WS : Handles
+  EXPRESS --> DRIZZLE : Data Access
+  DRIZZLE --> TS : Type Safety
+}
+
+' Database
+database "PostgreSQL" as PG {
+  [simulation_runs] as RUNS
+  [simulation_steps] as STEPS
+}
+
+' Connections
+FE -> BE : HTTP/REST
+FE <-> BE : WebSocket
+BE -> PG : SQL
+
+' Styling
+skinparam component {
+  BackgroundColor #E1F5FE
+  BorderColor #0288D1
+  ArrowColor #0288D1
+}
+
+skinparam database {
+  BackgroundColor #E8F5E9
+  BorderColor #388E3C
+}
+
+skinparam package {
+  BackgroundColor #F5F5F5
+  BorderColor #9E9E9E
+}
+
+' Notes
+note right of EXPRESS
+  Express.js handles
+  REST API endpoints
+  and WebSocket upgrades
+end note
+
+note bottom of PG
+  PostgreSQL 15+ with
+  Drizzle ORM for
+  type-safe queries
+end note
+
+@enduml
