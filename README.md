@@ -14,7 +14,6 @@ A real-time simulation engine for modeling system behavior under stress conditio
 - [Monitoring](#-monitoring)
 - [Project Structure](#-project-structure)
 - [License](#-license)
-- [Support](#-support)
 - [Live Deployment](#live-deployment)
 
 ## 🚀 Features
@@ -146,7 +145,7 @@ POST   /api/runs/:id/steps    # Add steps to run
 
 ## 🎯 Usage Examples
 
-### Basic Simulation
+### Example Simulation
 ```javascript
 // Start a new simulation
 const response = await fetch('/api/engine/evaluate', {
@@ -187,7 +186,7 @@ npm run check        # Run TypeScript checks
 npm run db:push      # Push database schema changes
 ```
 
-### Project Structure
+# Project Structure
 
 ```
 DigitalTwin-Engine/
