@@ -1,4 +1,4 @@
--- PostgreSQL database schema for DigitalTwin-Engine
+PostgreSQL database schema for DigitalTwin-Engine
 
 fOR LOCAL PC SUCH AS WINDOWS
 # Database Setup Guide
