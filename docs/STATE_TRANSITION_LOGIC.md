@@ -48,6 +48,8 @@ const THRESHOLDS = {
 
 For detailed chart visualization information, see [CHART_VISUALIZATION.md](./CHART_VISUALIZATION.md).
 
+Note: This is a general system, thus no units are applied except time (milliseconds). The simulation updates every 200ms (5Hz). The 5Hz comes from the calculation: 1000ms ÷ 200ms = 5 updates per second = 5Hz.
+
 
 
 
